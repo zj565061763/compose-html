@@ -21,6 +21,7 @@ import com.sd.lib.compose.html.tags.Tag_i
 import com.sd.lib.compose.html.tags.Tag_li
 import com.sd.lib.compose.html.tags.Tag_ol
 import com.sd.lib.compose.html.tags.Tag_p
+import com.sd.lib.compose.html.tags.Tag_span
 import com.sd.lib.compose.html.tags.Tag_strong
 import com.sd.lib.compose.html.tags.Tag_u
 import com.sd.lib.compose.html.tags.Tag_ul
@@ -90,6 +91,7 @@ open class FComposeHtml {
       addTag("li") { Tag_li() }
       addTag("ol") { Tag_ol() }
       addTag("p") { Tag_p() }
+      addTag("span") { Tag_span() }
       addTag("strong") { Tag_strong() }
       addTag("u") { Tag_u() }
       addTag("ul") { Tag_ul() }
