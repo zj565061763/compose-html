@@ -15,7 +15,7 @@ abstract class Tag_img(
    private val maxWidth: Dp,
    private val lineHeight: TextUnit,
 ) : ComposeHtml.Tag() {
-   override fun elementStart(builder: AnnotatedString.Builder, element: Element) {
+   override fun elementStart(builder: AnnotatedString.Builder, element: Element): Boolean {
       val src = element.attr("src")
 
       val maxWidthPx = density.run { maxWidth.toPx() }
@@ -24,7 +24,7 @@ abstract class Tag_img(
       val width = (element.attr("width").toFloatOrNull() ?: lineHeightPx).coerceIn(0f, maxWidthPx)
       if (width <= 0f) {
          builder.appendInlineContent(id = src)
-         return
+         return false
       }
 
       if (width > lineHeightPx) {
@@ -46,6 +46,7 @@ abstract class Tag_img(
             placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom,
          )
       )
+      return false
    }
 
    protected abstract fun addImgContent(

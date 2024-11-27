@@ -55,10 +55,9 @@ class ComposeHtml {
       return buildAnnotatedString {
          val builder = this
          val tag = checkNotNull(newTag(body))
-         tag.elementStart(
-            builder = builder,
-            element = body,
-         )
+
+         val skip = tag.elementStart(builder, body)
+         if (skip) return@buildAnnotatedString
 
          val start = length
          parseElement(this, body, tag)
@@ -85,11 +84,10 @@ class ComposeHtml {
             }
 
             is Element -> {
-               newTag(node)?.also { tag ->
-                  tag.elementStart(
-                     builder = builder,
-                     element = node,
-                  )
+               val tag = newTag(node)
+               if (tag != null) {
+                  val skip = tag.elementStart(builder, node)
+                  if (skip) continue
 
                   val start = builder.length
                   parseElement(builder, node, tag)
@@ -133,7 +131,7 @@ class ComposeHtml {
       open fun elementStart(
          builder: AnnotatedString.Builder,
          element: Element,
-      ) = Unit
+      ): Boolean = false
 
       open fun elementText(
          builder: AnnotatedString.Builder,

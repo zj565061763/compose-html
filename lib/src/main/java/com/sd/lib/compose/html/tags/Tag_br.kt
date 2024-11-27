@@ -5,7 +5,8 @@ import com.sd.lib.compose.html.ComposeHtml
 import org.jsoup.nodes.Element
 
 internal class Tag_br : ComposeHtml.Tag() {
-   override fun elementStart(builder: AnnotatedString.Builder, element: Element) {
+   override fun elementStart(builder: AnnotatedString.Builder, element: Element): Boolean {
       builder.appendLine()
+      return false
    }
 }

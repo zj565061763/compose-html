@@ -11,8 +11,9 @@ import org.jsoup.nodes.Element
 open class TagBlock : ComposeHtml.Tag() {
    private var _startNewLineIndex = -1
 
-   override fun elementStart(builder: AnnotatedString.Builder, element: Element) {
+   override fun elementStart(builder: AnnotatedString.Builder, element: Element): Boolean {
       _startNewLineIndex = builder.appendNewLine()
+      return false
    }
 
    override fun elementEnd(builder: AnnotatedString.Builder, element: Element, start: Int, end: Int) {
