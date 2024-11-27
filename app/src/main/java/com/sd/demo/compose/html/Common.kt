@@ -51,7 +51,15 @@ fun AppTextView(
          }
       }
 
-      val annotated = remember(composeHtml, html) { composeHtml.parse(html) }
+      val annotated = remember(
+         composeHtml,
+         html,
+         density,
+         maxWidth,
+      ) {
+         composeHtml.parse(html)
+      }
+
       val inlineContent by composeHtml.inlineContentFlow.collectAsStateWithLifecycle()
 
       Text(
