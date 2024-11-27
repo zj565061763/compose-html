@@ -1,3 +1,3 @@
 package com.sd.lib.compose.html.tags
 
-internal class Tag_div : TagBlock()
+internal class Tag_div : TagBlock(cssTextAlign = true)

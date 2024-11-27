@@ -11,7 +11,7 @@ import com.sd.lib.compose.html.styleTextDecoration
 import org.jsoup.nodes.Element
 
 open class TagBlock(
-   private val cssTextAlign: Boolean = true,
+   private val cssTextAlign: Boolean = false,
 ) : FComposeHtml.Tag() {
    private var _startNewLineIndex = -1
 
