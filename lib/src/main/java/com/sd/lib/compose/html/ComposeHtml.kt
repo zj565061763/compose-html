@@ -2,9 +2,6 @@ package com.sd.lib.compose.html
 
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -38,28 +35,6 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.jsoup.parser.ParseSettings
 import org.jsoup.parser.Parser
-
-@Composable
-fun rememberComposeHtml(
-   enableCache: Boolean = true,
-): ComposeHtml {
-   return remember(enableCache) {
-      ComposeHtml(enableCache = enableCache)
-   }
-}
-
-@Composable
-fun ComposeHtml.Factory(
-   tagName: String,
-   factory: (element: Element) -> Tag,
-) {
-   val composeHtml = this
-   val factoryUpdated by rememberUpdatedState(factory)
-   remember(composeHtml, tagName) {
-      composeHtml.setTagFactory(tagName) { factoryUpdated(it) }
-      ""
-   }
-}
 
 class ComposeHtml(
    private val enableCache: Boolean = true,
