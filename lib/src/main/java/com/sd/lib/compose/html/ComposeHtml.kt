@@ -39,7 +39,7 @@ import org.jsoup.parser.Parser
 class ComposeHtml(
    private val enableCache: Boolean = true,
 ) {
-   private val _tagFactories = mutableMapOf<String, (Element) -> Tag>()
+   private val _tagFactories = mutableMapOf<String, (Element) -> Tag?>()
    private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
 
    private var _cachedHtml = ""
@@ -48,7 +48,7 @@ class ComposeHtml(
    val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
       get() = _inlineContentFlow.asStateFlow()
 
-   fun setTagFactory(tagName: String, factory: (element: Element) -> Tag) {
+   fun setTagFactory(tagName: String, factory: (element: Element) -> Tag?) {
       synchronized(this@ComposeHtml) {
          _tagFactories[tagName] = factory
       }
