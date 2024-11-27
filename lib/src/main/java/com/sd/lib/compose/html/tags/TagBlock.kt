@@ -1,10 +1,12 @@
 package com.sd.lib.compose.html.tags
 
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import com.sd.lib.compose.html.FComposeHtml
 import com.sd.lib.compose.html.styleBackgroundColor
 import com.sd.lib.compose.html.styleColor
+import com.sd.lib.compose.html.styleTextAlign
 import com.sd.lib.compose.html.styleTextDecoration
 import org.jsoup.nodes.Element
 
@@ -16,13 +18,15 @@ open class TagBlock : FComposeHtml.Tag() {
    }
 
    override fun elementEnd(builder: AnnotatedString.Builder, element: Element, start: Int, end: Int) {
-//      element.styleTextAlign()?.also { value ->
-//         builder.addStyle(
-//            style = ParagraphStyle(textAlign = value),
-//            start = start,
-//            end = end,
-//         )
-//      }
+      if (end > start && element.parentNode()?.nodeName() == "body") {
+         element.styleTextAlign()?.also { value ->
+            builder.addStyle(
+               style = ParagraphStyle(textAlign = value),
+               start = start,
+               end = end,
+            )
+         }
+      }
 
       element.styleColor()?.also { value ->
          builder.addStyle(
