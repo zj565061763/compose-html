@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sd.lib.compose.html.ComposeHtml
+import com.sd.lib.compose.html.Factory
 import com.sd.lib.compose.html.rememberComposeHtml
 import org.jsoup.nodes.Element
 
@@ -31,11 +32,8 @@ fun AppTextView(
    modifier: Modifier = Modifier,
    html: String,
 ) {
-   val composeHtml = rememberComposeHtml {
-      when (it.tagName()) {
-         "img" -> AppTag_img()
-         else -> null
-      }
+   val composeHtml = rememberComposeHtml().apply {
+      Factory("img") { AppTag_img() }
    }
 
    val annotated = remember(composeHtml, html) { composeHtml.parse(html) }

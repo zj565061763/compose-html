@@ -42,21 +42,29 @@ import org.jsoup.parser.Parser
 @Composable
 fun rememberComposeHtml(
    enableCache: Boolean = true,
-   tagFactory: ((element: Element) -> Tag?)? = null,
 ): ComposeHtml {
-   val tagFactoryUpdated by rememberUpdatedState(tagFactory)
    return remember(enableCache) {
-      ComposeHtml(enableCache = enableCache) { element ->
-         tagFactoryUpdated?.invoke(element)
-      }
+      ComposeHtml(enableCache = enableCache)
+   }
+}
+
+@Composable
+fun ComposeHtml.Factory(
+   tagName: String,
+   factory: (element: Element) -> Tag,
+) {
+   val composeHtml = this
+   val factoryUpdated by rememberUpdatedState(factory)
+   remember(composeHtml, tagName) {
+      composeHtml.setTagFactory(tagName) { factoryUpdated(it) }
+      ""
    }
 }
 
 class ComposeHtml(
    private val enableCache: Boolean = true,
-   private val tagFactory: ((element: Element) -> Tag?)? = null,
 ) {
-   private val _parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
+   private val _tagFactories = mutableMapOf<String, (Element) -> Tag>()
    private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
 
    private var _cachedHtml = ""
@@ -64,6 +72,12 @@ class ComposeHtml(
 
    val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
       get() = _inlineContentFlow.asStateFlow()
+
+   fun setTagFactory(tagName: String, factory: (element: Element) -> Tag) {
+      synchronized(this@ComposeHtml) {
+         _tagFactories[tagName] = factory
+      }
+   }
 
    fun parse(html: String): AnnotatedString {
       if (enableCache) {
@@ -74,7 +88,9 @@ class ComposeHtml(
          }
       }
 
-      val body = Jsoup.parse(html, _parser).body() ?: return AnnotatedString("")
+      val parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
+      val body = Jsoup.parse(html, parser).body() ?: return AnnotatedString("")
+
       return buildAnnotatedString {
          val builder = this
          val tag = checkNotNull(newTag(body))
@@ -138,10 +154,13 @@ class ComposeHtml(
    }
 
    private fun newTag(element: Element): Tag? {
-      return (tagFactory?.invoke(element) ?: DefaultTagFactory(element))
-         ?.also { tag ->
-            tag.inlineContentHolder = _inlineTextContentHolder
-         }
+      val tagName = element.tagName()
+      val tag = synchronized(this@ComposeHtml) {
+         _tagFactories[tagName]?.invoke(element)
+      } ?: newDefaultTag(tagName)
+      return tag?.also {
+         it.inlineContentHolder = _inlineTextContentHolder
+      }
    }
 
    private val _inlineTextContentHolder = object : InlineContentHolder {
@@ -218,8 +237,8 @@ internal interface InlineContentHolder {
    )
 }
 
-private val DefaultTagFactory: (Element) -> Tag? = { element: Element ->
-   when (element.tagName()) {
+private fun newDefaultTag(tagName: String): Tag? {
+   return when (tagName) {
       "body" -> Tag_body()
       "p" -> Tag_p()
       "div" -> Tag_div()
