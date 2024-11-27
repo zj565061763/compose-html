@@ -75,10 +75,7 @@ private class AppTag_img(
    override fun addImgContent(src: String, alt: String, placeholder: Placeholder) {
       addInlineContent(
          id = src,
-         placeholder = placeholder.copy(
-            width = 48.sp,
-            height = 48.sp,
-         ),
+         placeholder = placeholder,
       ) {
          Box(
             contentAlignment = Alignment.Center,
