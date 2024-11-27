@@ -19,7 +19,7 @@ fun rememberComposeHtml(
 @Composable
 fun ComposeHtml.Factory(
    tagName: String,
-   factory: (element: Element) -> Tag,
+   factory: (element: Element) -> Tag?,
 ) {
    val composeHtml = this
    val factoryUpdated by rememberUpdatedState(factory)
