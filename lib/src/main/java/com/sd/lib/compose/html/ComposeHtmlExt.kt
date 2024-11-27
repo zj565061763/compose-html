@@ -8,12 +8,8 @@ import com.sd.lib.compose.html.ComposeHtml.Tag
 import org.jsoup.nodes.Element
 
 @Composable
-fun rememberComposeHtml(
-   enableCache: Boolean = true,
-): ComposeHtml {
-   return remember(enableCache) {
-      ComposeHtml(enableCache = enableCache)
-   }
+fun rememberComposeHtml(): ComposeHtml {
+   return remember { ComposeHtml() }
 }
 
 @Composable

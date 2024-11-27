@@ -36,14 +36,9 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.parser.ParseSettings
 import org.jsoup.parser.Parser
 
-class ComposeHtml(
-   private val enableCache: Boolean = true,
-) {
+class ComposeHtml {
    private val _tagFactories = mutableMapOf<String, (Element) -> Tag?>()
    private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
-
-   private var _cachedHtml = ""
-   private var _cachedAnnotatedString: AnnotatedString? = null
 
    val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
       get() = _inlineContentFlow.asStateFlow()
@@ -55,17 +50,8 @@ class ComposeHtml(
    }
 
    fun parse(html: String): AnnotatedString {
-      if (enableCache) {
-         synchronized(this@ComposeHtml) {
-            _cachedAnnotatedString?.also { cache ->
-               if (_cachedHtml == html) return cache
-            }
-         }
-      }
-
       val parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
       val body = Jsoup.parse(html, parser).body() ?: return AnnotatedString("")
-
       return buildAnnotatedString {
          val builder = this
          val tag = checkNotNull(newTag(body))
@@ -84,13 +70,6 @@ class ComposeHtml(
             start = start,
             end = end,
          )
-      }.also {
-         if (enableCache) {
-            synchronized(this@ComposeHtml) {
-               _cachedHtml = html
-               _cachedAnnotatedString = it
-            }
-         }
       }
    }
 
