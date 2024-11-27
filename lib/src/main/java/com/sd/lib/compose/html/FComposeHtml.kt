@@ -59,8 +59,8 @@ class FComposeHtml(
    private val _parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
    private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
 
-   private var _parsedHtml = ""
-   private var _parsedAnnotatedString: AnnotatedString? = null
+   private var _cachedHtml = ""
+   private var _cachedAnnotatedString: AnnotatedString? = null
 
    val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
       get() = _inlineContentFlow.asStateFlow()
@@ -68,8 +68,8 @@ class FComposeHtml(
    fun parse(html: String): AnnotatedString {
       if (enableCache) {
          synchronized(this@FComposeHtml) {
-            _parsedAnnotatedString?.also { cache ->
-               if (_parsedHtml == html) return cache
+            _cachedAnnotatedString?.also { cache ->
+               if (_cachedHtml == html) return cache
             }
          }
       }
@@ -96,8 +96,8 @@ class FComposeHtml(
       }.also {
          if (enableCache) {
             synchronized(this@FComposeHtml) {
-               _parsedHtml = html
-               _parsedAnnotatedString = it
+               _cachedHtml = html
+               _cachedAnnotatedString = it
             }
          }
       }
