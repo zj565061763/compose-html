@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sd.demo.compose.html.theme.AppTheme
-import com.sd.lib.compose.html.FComposeHtml
-import com.sd.lib.compose.html.rememberFComposeHtml
+import com.sd.lib.compose.html.ComposeHtml
+import com.sd.lib.compose.html.rememberComposeHtml
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 
@@ -43,7 +43,7 @@ private fun Content(
         <p>start<user>hello</user>end</p>
     """.trimIndent()
 
-   val composeHtml = rememberFComposeHtml {
+   val composeHtml = rememberComposeHtml {
       when (it.tagName()) {
          "user" -> Tag_user()
          else -> null
@@ -66,7 +66,7 @@ private fun Content(
    }
 }
 
-private class Tag_user : FComposeHtml.Tag() {
+private class Tag_user : ComposeHtml.Tag() {
    override fun elementText(builder: AnnotatedString.Builder, element: Element, textNode: TextNode) {
       builder.appendInlineContent(id = "user")
       addInlineContent(

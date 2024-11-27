@@ -22,8 +22,8 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sd.lib.compose.html.FComposeHtml
-import com.sd.lib.compose.html.rememberFComposeHtml
+import com.sd.lib.compose.html.ComposeHtml
+import com.sd.lib.compose.html.rememberComposeHtml
 import org.jsoup.nodes.Element
 
 @Composable
@@ -31,7 +31,7 @@ fun AppTextView(
    modifier: Modifier = Modifier,
    html: String,
 ) {
-   val composeHtml = rememberFComposeHtml {
+   val composeHtml = rememberComposeHtml {
       when (it.tagName()) {
          "img" -> AppTag_img()
          else -> null
@@ -51,7 +51,7 @@ fun AppTextView(
    )
 }
 
-private class AppTag_img : FComposeHtml.Tag() {
+private class AppTag_img : ComposeHtml.Tag() {
    override fun elementStart(builder: AnnotatedString.Builder, element: Element) {
       val src = element.attr("src")
       val alt = element.attr("alt")

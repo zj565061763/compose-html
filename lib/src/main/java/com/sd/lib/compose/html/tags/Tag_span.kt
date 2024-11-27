@@ -1,5 +1,5 @@
 package com.sd.lib.compose.html.tags
 
-import com.sd.lib.compose.html.FComposeHtml
+import com.sd.lib.compose.html.ComposeHtml
 
-internal class Tag_span : FComposeHtml.Tag()
+internal class Tag_span : ComposeHtml.Tag()

@@ -7,13 +7,13 @@ import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.style.TextDecoration
-import com.sd.lib.compose.html.FComposeHtml
+import com.sd.lib.compose.html.ComposeHtml
 import org.jsoup.nodes.Element
 
 internal class Tag_a(
    private val style: SpanStyle = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline),
    private val linkInteractionListener: LinkInteractionListener? = null,
-) : FComposeHtml.Tag() {
+) : ComposeHtml.Tag() {
    override fun elementEnd(builder: AnnotatedString.Builder, element: Element, start: Int, end: Int) {
       val href = element.attr("href")
       if (href.isNotEmpty()) {

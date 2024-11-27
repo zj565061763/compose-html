@@ -11,7 +11,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
-import com.sd.lib.compose.html.FComposeHtml.Tag
+import com.sd.lib.compose.html.ComposeHtml.Tag
 import com.sd.lib.compose.html.tags.Tag_a
 import com.sd.lib.compose.html.tags.Tag_b
 import com.sd.lib.compose.html.tags.Tag_blockquote
@@ -40,19 +40,19 @@ import org.jsoup.parser.ParseSettings
 import org.jsoup.parser.Parser
 
 @Composable
-fun rememberFComposeHtml(
+fun rememberComposeHtml(
    enableCache: Boolean = true,
    tagFactory: ((element: Element) -> Tag?)? = null,
-): FComposeHtml {
+): ComposeHtml {
    val tagFactoryUpdated by rememberUpdatedState(tagFactory)
    return remember(enableCache) {
-      FComposeHtml(enableCache = enableCache) { element ->
+      ComposeHtml(enableCache = enableCache) { element ->
          tagFactoryUpdated?.invoke(element)
       }
    }
 }
 
-class FComposeHtml(
+class ComposeHtml(
    private val enableCache: Boolean = true,
    private val tagFactory: ((element: Element) -> Tag?)? = null,
 ) {
@@ -67,7 +67,7 @@ class FComposeHtml(
 
    fun parse(html: String): AnnotatedString {
       if (enableCache) {
-         synchronized(this@FComposeHtml) {
+         synchronized(this@ComposeHtml) {
             _cachedAnnotatedString?.also { cache ->
                if (_cachedHtml == html) return cache
             }
@@ -95,7 +95,7 @@ class FComposeHtml(
          )
       }.also {
          if (enableCache) {
-            synchronized(this@FComposeHtml) {
+            synchronized(this@ComposeHtml) {
                _cachedHtml = html
                _cachedAnnotatedString = it
             }
