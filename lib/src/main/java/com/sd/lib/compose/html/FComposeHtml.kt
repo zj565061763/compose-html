@@ -2,12 +2,16 @@ package com.sd.lib.compose.html
 
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
+import com.sd.lib.compose.html.FComposeHtml.Tag
 import com.sd.lib.compose.html.tags.Tag_a
 import com.sd.lib.compose.html.tags.Tag_b
 import com.sd.lib.compose.html.tags.Tag_blockquote
@@ -35,21 +39,45 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.parser.ParseSettings
 import org.jsoup.parser.Parser
 
-open class FComposeHtml {
-   private val _tags = mutableMapOf<String, () -> Tag>()
+@Composable
+fun rememberFComposeHtml(
+   enableCache: Boolean = true,
+   tagFactory: ((element: Element) -> Tag?)? = null,
+): FComposeHtml {
+   val tagFactoryUpdated by rememberUpdatedState(tagFactory)
+   return remember(enableCache) {
+      FComposeHtml(enableCache = enableCache) { element ->
+         tagFactoryUpdated?.invoke(element)
+      }
+   }
+}
+
+class FComposeHtml(
+   private val enableCache: Boolean = true,
+   private val tagFactory: ((element: Element) -> Tag?)? = null,
+) {
+   private val _parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
    private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
+
+   private var _parsedHtml = ""
+   private var _parsedAnnotatedString: AnnotatedString? = null
 
    val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
       get() = _inlineContentFlow.asStateFlow()
 
-   fun parse(
-      html: String,
-      parser: Parser = Parser.htmlParser().settings(ParseSettings.preserveCase),
-   ): AnnotatedString {
-      val body = Jsoup.parse(html, parser).body() ?: return AnnotatedString("")
+   fun parse(html: String): AnnotatedString {
+      if (enableCache) {
+         synchronized(this@FComposeHtml) {
+            _parsedAnnotatedString?.also { cache ->
+               if (_parsedHtml == html) return cache
+            }
+         }
+      }
+
+      val body = Jsoup.parse(html, _parser).body() ?: return AnnotatedString("")
       return buildAnnotatedString {
          val builder = this
-         val tag = checkNotNull(newTag("body"))
+         val tag = checkNotNull(newTag(body))
          tag.elementStart(
             builder = builder,
             element = body,
@@ -65,36 +93,14 @@ open class FComposeHtml {
             start = start,
             end = end,
          )
+      }.also {
+         if (enableCache) {
+            synchronized(this@FComposeHtml) {
+               _parsedHtml = html
+               _parsedAnnotatedString = it
+            }
+         }
       }
-   }
-
-   fun addTag(tag: String, factory: () -> Tag) {
-      _tags[tag] = factory
-   }
-
-   init {
-      addTag("body") { Tag_body() }
-      addTag("a") { Tag_a() }
-      addTag("b") { Tag_b() }
-      addTag("blockquote") { Tag_blockquote() }
-      addTag("br") { Tag_br() }
-      addTag("div") { Tag_div() }
-      addTag("em") { Tag_em() }
-      addTag("font") { Tag_font() }
-      addTag("h1") { Tag_heading.level(1) }
-      addTag("h2") { Tag_heading.level(2) }
-      addTag("h3") { Tag_heading.level(3) }
-      addTag("h4") { Tag_heading.level(4) }
-      addTag("h5") { Tag_heading.level(5) }
-      addTag("h6") { Tag_heading.level(6) }
-      addTag("i") { Tag_i() }
-      addTag("li") { Tag_li() }
-      addTag("ol") { Tag_ol() }
-      addTag("p") { Tag_p() }
-      addTag("span") { Tag_span() }
-      addTag("strong") { Tag_strong() }
-      addTag("u") { Tag_u() }
-      addTag("ul") { Tag_ul() }
    }
 
    private fun parseElement(builder: AnnotatedString.Builder, parent: Element, parentTag: Tag) {
@@ -109,7 +115,7 @@ open class FComposeHtml {
             }
 
             is Element -> {
-               newTag(node.tagName())?.also { tag ->
+               newTag(node)?.also { tag ->
                   tag.elementStart(
                      builder = builder,
                      element = node,
@@ -131,10 +137,11 @@ open class FComposeHtml {
       }
    }
 
-   private fun newTag(tagName: String): Tag? {
-      return _tags[tagName]?.invoke()?.also { tag ->
-         tag.inlineContentHolder = _inlineTextContentHolder
-      }
+   private fun newTag(element: Element): Tag? {
+      return (tagFactory?.invoke(element) ?: DefaultTagFactory(element))
+         ?.also { tag ->
+            tag.inlineContentHolder = _inlineTextContentHolder
+         }
    }
 
    private val _inlineTextContentHolder = object : InlineContentHolder {
@@ -209,4 +216,32 @@ internal interface InlineContentHolder {
       placeholder: Placeholder,
       content: @Composable (String) -> Unit,
    )
+}
+
+private val DefaultTagFactory: (Element) -> Tag? = { element: Element ->
+   when (element.tagName()) {
+      "body" -> Tag_body()
+      "p" -> Tag_p()
+      "div" -> Tag_div()
+      "a" -> Tag_a()
+      "br" -> Tag_br()
+      "ul" -> Tag_ul()
+      "li" -> Tag_li()
+      "span" -> Tag_span()
+      "b" -> Tag_b()
+      "strong" -> Tag_strong()
+      "em" -> Tag_em()
+      "i" -> Tag_i()
+      "u" -> Tag_u()
+      "font" -> Tag_font()
+      "h1" -> Tag_heading.level(1)
+      "h2" -> Tag_heading.level(2)
+      "h3" -> Tag_heading.level(3)
+      "h4" -> Tag_heading.level(4)
+      "h5" -> Tag_heading.level(5)
+      "h6" -> Tag_heading.level(6)
+      "blockquote" -> Tag_blockquote()
+      "ol" -> Tag_ol()
+      else -> null
+   }
 }
