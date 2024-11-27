@@ -27,14 +27,11 @@ abstract class Tag_img(
          return
       }
 
-      var placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom
-
       if (width > lineHeightPx) {
          val lineSize = (width / lineHeightPx).toInt() + 1
          repeat(lineSize) { builder.appendLine() }
          builder.appendInlineContent(id = src)
          builder.appendLine()
-         placeholderVerticalAlign = PlaceholderVerticalAlign.Bottom
       } else {
          builder.appendInlineContent(id = src)
       }
@@ -46,7 +43,7 @@ abstract class Tag_img(
          placeholder = Placeholder(
             width = size,
             height = size,
-            placeholderVerticalAlign = placeholderVerticalAlign,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom,
          )
       )
    }

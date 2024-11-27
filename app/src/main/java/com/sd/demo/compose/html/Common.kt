@@ -38,6 +38,7 @@ fun AppTextView(
       modifier = modifier,
    ) {
       val density = LocalDensity.current
+      val maxWidth = maxWidth
       val lineHeight = 18.sp
 
       val composeHtml = rememberComposeHtml().apply {
