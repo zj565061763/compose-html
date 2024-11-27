@@ -8,8 +8,14 @@ import com.sd.lib.compose.html.ComposeHtml.Tag
 import org.jsoup.nodes.Element
 
 @Composable
-fun rememberComposeHtml(): ComposeHtml {
-   return remember { ComposeHtml() }
+fun rememberComposeHtml(
+   onCreate: ((ComposeHtml) -> Unit)? = null,
+): ComposeHtml {
+   return remember {
+      ComposeHtml().also {
+         onCreate?.invoke(it)
+      }
+   }
 }
 
 @Composable
@@ -20,7 +26,9 @@ fun ComposeHtml.Factory(
    val composeHtml = this
    val factoryUpdated by rememberUpdatedState(factory)
    remember(composeHtml, tagName) {
-      composeHtml.setTagFactory(tagName) { factoryUpdated(it) }
+      composeHtml.setTagFactory(tagName) {
+         factoryUpdated(it)
+      }
       ""
    }
 }

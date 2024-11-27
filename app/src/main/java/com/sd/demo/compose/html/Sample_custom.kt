@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sd.demo.compose.html.theme.AppTheme
 import com.sd.lib.compose.html.ComposeHtml
-import com.sd.lib.compose.html.Factory
 import com.sd.lib.compose.html.rememberComposeHtml
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -44,8 +43,8 @@ private fun Content(
         <p>start<user>hello</user>end</p>
     """.trimIndent()
 
-   val composeHtml = rememberComposeHtml().apply {
-      Factory("user") { Tag_user() }
+   val composeHtml = rememberComposeHtml {
+      it.setTagFactory("user") { Tag_user() }
    }
 
    val annotated = remember(composeHtml, html) { composeHtml.parse(html) }
