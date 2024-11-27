@@ -10,7 +10,9 @@ import com.sd.lib.compose.html.styleTextAlign
 import com.sd.lib.compose.html.styleTextDecoration
 import org.jsoup.nodes.Element
 
-open class TagBlock : FComposeHtml.Tag() {
+open class TagBlock(
+   private val cssTextAlign: Boolean = true,
+) : FComposeHtml.Tag() {
    private var _startNewLineIndex = -1
 
    override fun elementStart(builder: AnnotatedString.Builder, element: Element) {
@@ -18,7 +20,7 @@ open class TagBlock : FComposeHtml.Tag() {
    }
 
    override fun elementEnd(builder: AnnotatedString.Builder, element: Element, start: Int, end: Int) {
-      if (end > start && element.parentNode()?.nodeName() == "body") {
+      if (cssTextAlign && end > start && element.parentNode()?.nodeName() == "body") {
          element.styleTextAlign()?.also { value ->
             builder.addStyle(
                style = ParagraphStyle(textAlign = value),
