@@ -46,7 +46,7 @@ class ComposeHtml {
       val body = Jsoup.parse(html, parser).body() ?: return Result.Empty
 
       val inlineContentHolder = ParseInlineContentHolder()
-      val annotated = buildAnnotatedString {
+      val annotatedString = buildAnnotatedString {
          val builder = this
          val tag = checkNotNull(newTag(body, inlineContentHolder))
 
@@ -66,7 +66,7 @@ class ComposeHtml {
       }
 
       return Result(
-         annotated = annotated,
+         text = annotatedString,
          inlineContent = inlineContentHolder.data.toMap(),
       )
    }
@@ -120,12 +120,12 @@ class ComposeHtml {
    }
 
    data class Result(
-      val annotated: AnnotatedString,
+      val text: AnnotatedString,
       val inlineContent: Map<String, InlineTextContent>,
    ) {
       companion object {
          val Empty = Result(
-            annotated = AnnotatedString(""),
+            text = AnnotatedString(""),
             inlineContent = emptyMap(),
          )
       }

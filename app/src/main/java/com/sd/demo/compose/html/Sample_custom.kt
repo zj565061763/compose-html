@@ -55,7 +55,7 @@ private fun Content(
          .padding(10.dp),
    ) {
       Text(
-         text = result.annotated,
+         text = result.text,
          fontSize = 16.sp,
          inlineContent = result.inlineContent,
       )

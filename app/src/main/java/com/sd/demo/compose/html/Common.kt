@@ -59,7 +59,7 @@ fun AppTextView(
       }
 
       Text(
-         text = result.annotated,
+         text = result.text,
          color = Color.Black,
          fontSize = 14.sp,
          lineHeight = lineHeight,
