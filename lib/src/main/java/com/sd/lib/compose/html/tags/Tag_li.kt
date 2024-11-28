@@ -2,11 +2,13 @@ package com.sd.lib.compose.html.tags
 
 import androidx.compose.ui.text.AnnotatedString
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.TextNode
 
-internal class Tag_li : TagBlock() {
-   override fun elementStart(builder: AnnotatedString.Builder, element: Element): Boolean {
-      super.elementStart(builder, element)
-      builder.append("•")
-      return false
+class Tag_li(
+   private val dot: String = "• ",
+) : TagBlock() {
+   override fun elementText(builder: AnnotatedString.Builder, element: Element, textNode: TextNode) {
+      builder.append(dot)
+      super.elementText(builder, element, textNode)
    }
 }
