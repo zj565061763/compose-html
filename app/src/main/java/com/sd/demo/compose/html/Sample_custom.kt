@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sd.demo.compose.html.theme.AppTheme
 import com.sd.lib.compose.html.ComposeHtml
 import com.sd.lib.compose.html.rememberComposeHtml
@@ -47,8 +45,9 @@ private fun Content(
       it.setTagFactory("user") { Tag_user() }
    }
 
-   val annotated = remember(composeHtml, html) { composeHtml.parse(html) }
-   val inlineContent by composeHtml.inlineContentFlow.collectAsStateWithLifecycle()
+   val result = remember(composeHtml, html) {
+      composeHtml.parse(html)
+   }
 
    Column(
       modifier = modifier
@@ -56,9 +55,9 @@ private fun Content(
          .padding(10.dp),
    ) {
       Text(
-         text = annotated,
+         text = result.annotated,
          fontSize = 16.sp,
-         inlineContent = inlineContent,
+         inlineContent = result.inlineContent,
       )
    }
 }

@@ -26,10 +26,6 @@ import com.sd.lib.compose.html.tags.Tag_span
 import com.sd.lib.compose.html.tags.Tag_strong
 import com.sd.lib.compose.html.tags.Tag_u
 import com.sd.lib.compose.html.tags.Tag_ul
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -38,10 +34,6 @@ import org.jsoup.parser.Parser
 
 class ComposeHtml {
    private val _tagFactories = mutableMapOf<String, (Element) -> Tag?>()
-   private val _inlineContentFlow = MutableStateFlow<Map<String, InlineTextContent>>(emptyMap())
-
-   val inlineContentFlow: StateFlow<Map<String, InlineTextContent>>
-      get() = _inlineContentFlow.asStateFlow()
 
    fun setTagFactory(tagName: String, factory: (element: Element) -> Tag?) {
       synchronized(this@ComposeHtml) {
@@ -49,18 +41,20 @@ class ComposeHtml {
       }
    }
 
-   fun parse(html: String): AnnotatedString {
+   fun parse(html: String): Result {
       val parser = Parser.htmlParser().settings(ParseSettings.preserveCase)
-      val body = Jsoup.parse(html, parser).body() ?: return AnnotatedString("")
-      return buildAnnotatedString {
+      val body = Jsoup.parse(html, parser).body() ?: return Result.Empty
+
+      val inlineContentHolder = ParseInlineContentHolder()
+      val annotated = buildAnnotatedString {
          val builder = this
-         val tag = checkNotNull(newTag(body))
+         val tag = checkNotNull(newTag(body, inlineContentHolder))
 
          val skip = tag.elementStart(builder, body)
          if (skip) return@buildAnnotatedString
 
          val start = length
-         parseElement(this, body, tag)
+         parseElement(this, body, tag, inlineContentHolder)
          val end = length
 
          tag.elementEnd(
@@ -70,9 +64,19 @@ class ComposeHtml {
             end = end,
          )
       }
+
+      return Result(
+         annotated = annotated,
+         inlineContent = inlineContentHolder.data.toMap(),
+      )
    }
 
-   private fun parseElement(builder: AnnotatedString.Builder, parent: Element, parentTag: Tag) {
+   private fun parseElement(
+      builder: AnnotatedString.Builder,
+      parent: Element,
+      parentTag: Tag,
+      inlineContentHolder: InlineContentHolder,
+   ) {
       for (node in parent.childNodes()) {
          when (node) {
             is TextNode -> {
@@ -84,13 +88,13 @@ class ComposeHtml {
             }
 
             is Element -> {
-               val tag = newTag(node)
+               val tag = newTag(node, inlineContentHolder)
                if (tag != null) {
                   val skip = tag.elementStart(builder, node)
                   if (skip) continue
 
                   val start = builder.length
-                  parseElement(builder, node, tag)
+                  parseElement(builder, node, tag, inlineContentHolder)
                   val end = builder.length
 
                   tag.elementEnd(
@@ -105,25 +109,25 @@ class ComposeHtml {
       }
    }
 
-   private fun newTag(element: Element): Tag? {
+   private fun newTag(element: Element, inlineContentHolder: InlineContentHolder): Tag? {
       val tagName = element.tagName()
       val tag = synchronized(this@ComposeHtml) {
          _tagFactories[tagName]?.invoke(element)
       } ?: newDefaultTag(tagName)
       return tag?.also {
-         it.inlineContentHolder = _inlineTextContentHolder
+         it.inlineContentHolder = inlineContentHolder
       }
    }
 
-   private val _inlineTextContentHolder = object : InlineContentHolder {
-      override fun addInlineTextContent(
-         id: String,
-         placeholder: Placeholder,
-         content: @Composable (String) -> Unit,
-      ) {
-         _inlineContentFlow.update {
-            it + (id to InlineTextContent(placeholder, content))
-         }
+   data class Result(
+      val annotated: AnnotatedString,
+      val inlineContent: Map<String, InlineTextContent>,
+   ) {
+      companion object {
+         internal val Empty = Result(
+            annotated = AnnotatedString(""),
+            inlineContent = emptyMap(),
+         )
       }
    }
 
@@ -187,6 +191,18 @@ internal interface InlineContentHolder {
       placeholder: Placeholder,
       content: @Composable (String) -> Unit,
    )
+}
+
+private class ParseInlineContentHolder : InlineContentHolder {
+   val data = mutableMapOf<String, InlineTextContent>()
+
+   override fun addInlineTextContent(
+      id: String,
+      placeholder: Placeholder,
+      content: @Composable (String) -> Unit,
+   ) {
+      data[id] = InlineTextContent(placeholder, content)
+   }
 }
 
 private fun newDefaultTag(tagName: String): Tag? {
