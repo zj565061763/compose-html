@@ -124,7 +124,7 @@ class ComposeHtml {
       val inlineContent: Map<String, InlineTextContent>,
    ) {
       companion object {
-         internal val Empty = Result(
+         val Empty = Result(
             annotated = AnnotatedString(""),
             inlineContent = emptyMap(),
          )
